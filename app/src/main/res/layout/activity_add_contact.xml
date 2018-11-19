@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddContact"
+    android:orientation="vertical"
+    android:background="@color/colorPrimaryDark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:gravity="center" >
+
+        <ImageView
+            android:id="@+id/no"
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/x"
+            android:onClick="no"/>
+        <ImageView
+            android:id="@+id/contactImage"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginHorizontal="30dp"
+            android:src="@drawable/anon"/>
+        <ImageView
+            android:id="@+id/yes"
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/check"
+            android:onClick="yes"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/contactName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name"
+        android:background="#FFFBF7"
+        android:paddingVertical="5dp"
+        android:paddingLeft="4dp"
+        android:layout_marginHorizontal="60dp"
+        android:inputType="textPersonName"
+        android:layout_marginTop="60dp"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="#"
+            android:textSize="20sp"
+            android:layout_marginLeft="62dp"/>
+        <EditText
+            android:id="@+id/contactNumber"
+            android:inputType="number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="(555) 555-5555"
+            android:background="#FFFBF7"
+            android:paddingVertical="5dp"
+            android:paddingLeft="4dp"
+            android:layout_marginRight="60dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="8dp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/at_symbol"
+            android:textSize="20sp"
+            android:layout_marginLeft="60dp"/>
+        <EditText
+            android:id="@+id/contactEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="example@regavi.com"
+            android:background="#FFFBF7"
+            android:paddingVertical="5dp"
+            android:paddingLeft="4dp"
+            android:layout_marginRight="60dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="5dp"
+            android:inputType="textEmailAddress"
+            />
+    </LinearLayout>
+    <EditText
+        android:id="@+id/contactBio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Personal Bio"
+        android:inputType="textMultiLine"
+        android:background="#FFFBF7"
+        android:paddingVertical="5dp"
+        android:paddingLeft="4dp"
+        android:layout_marginHorizontal="60dp"
+        android:layout_marginTop="10dp" />
+
+</LinearLayout>

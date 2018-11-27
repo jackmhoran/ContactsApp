@@ -17,9 +17,9 @@ import org.w3c.dom.Text;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    LinearLayout m;
+    LinearLayout mainContent;
     LinearLayout userBar;
-    ImageView plus;
+    ImageView plusSymbol;
     ImageView userImage;
     TextView userName;
 
@@ -28,32 +28,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         convert();
-        SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
-        loadContacts(preferences.getAll());
-        userName.setText(preferences.getString("myName","You"));
+        populate();
         onClickMe();
     }
 
     private void convert(){
         userBar = (LinearLayout) findViewById(R.id.userBar);
-        plus = (ImageView) findViewById(R.id.plus);
-        m = (LinearLayout) findViewById(R.id.main);
+        plusSymbol = (ImageView) findViewById(R.id.plus);
+        mainContent = (LinearLayout) findViewById(R.id.main);
         userImage = (ImageView) findViewById(R.id.userImage);
         userName = (TextView) findViewById(R.id.userName);
     }
+    private void populate(){
+        SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
+        loadContacts(preferences.getAll());
+        userName.setText(preferences.getString("myName","You"));
+    }
     private void onClickMe(){
         //For viewing me
-        final Intent j = new Intent(this, ViewMe.class);
+        final Intent toViewMe = new Intent(this, ViewMe.class);
         userBar.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
-                startActivity(j);
+                startActivity(toViewMe);
             }
         });
         //For modifying me
-        final Intent f = new Intent(this, EditMe.class);
+        final Intent toEditMe = new Intent(this, EditMe.class);
         userImage.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
-                startActivity(f);
+                startActivity(toEditMe);
             }
         });
     }
@@ -71,45 +74,71 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private void addContact(String string){
-        LinearLayout l = new LinearLayout(this);
+    private void addContact(String name){
+        LinearLayout contactView = new LinearLayout(this);
+        contactView.setOrientation(LinearLayout.HORIZONTAL);
+        contactView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        contactView.addView(setImage(name));
+        contactView.addView(setName(name));
+        mainContent.addView(contactView);
+        addSpacing();
+        addOnClickView(contactView, name);
+    }
+    private TextView setName(String name){
+        TextView contactName = new TextView(this);
+        contactName.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+        contactName.setText(capitalizeName(name));
+        int paddingTemp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+        contactName.setPadding(paddingTemp,paddingTemp,paddingTemp,paddingTemp);
+        return contactName;
+    }
+    private String capitalizeName(String name){
+        char[] chars = name.toLowerCase().toCharArray();
+        boolean found = false;
+        for (int i = 0; i < chars.length; i++) {
+            if (!found && Character.isLetter(chars[i])) {
+                chars[i] = Character.toUpperCase(chars[i]);
+                found = true;
+            } else if (Character.isWhitespace(chars[i]) || chars[i]=='.' || chars[i]=='\'') {
+                found = false;
+            }
+        }
+        return String.valueOf(chars);
+    }
+    private ImageView setImage(String name){
         ImageView  image = new ImageView(this);
-        TextView text = new TextView(this);
-
-        l.setOrientation(LinearLayout.HORIZONTAL);
-        l.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
         image.setImageResource(R.drawable.anon);
         int sizeTemp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, getResources().getDisplayMetrics());
         image.setLayoutParams(new ViewGroup.LayoutParams(sizeTemp, ViewGroup.LayoutParams.MATCH_PARENT));
-
-
-        text.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT));
-        text.setText(string);
-        int paddingTemp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
-        text.setPadding(paddingTemp,paddingTemp,paddingTemp,paddingTemp);
-
-        l.addView(image);
-        l.addView(text);
-        m.addView(l);
-
-        addOnClick(l, image, string);
+        addOnClickModify(image, name);
+        return image;
     }
-    private void addOnClick(LinearLayout l, ImageView v, String name){
-        //For viewing contact
-        final Intent j = new Intent(this, ViewContact.class);
-        j.putExtra("name",name);
-        l.setOnClickListener(new View.OnClickListener(){
+    //TODO CLASS EXTENDS VIEW
+    //OOP CONTACT RATHER THAN CLASS
+    private void addSpacing(){
+        LinearLayout separation = new LinearLayout(this);
+        separation.setOrientation(LinearLayout.HORIZONTAL);
+        separation.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        separation.setBackgroundColor(getColor(R.color.colorPrimaryDarkPlus));
+        mainContent.addView(separation);
+    }
+    private void addOnClickModify(ImageView contactImage, String name){
+        //For modifying contact
+        final Intent toModifyContact = new Intent(this, ModifyContact.class);
+        toModifyContact.putExtra("name",name);
+        contactImage.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
-                startActivity(j);
+                startActivity(toModifyContact);
             }
         });
-        //For modifying contact
-        final Intent f = new Intent(this, ModifyContact.class);
-        f.putExtra("name",name);
-        v.setOnClickListener(new View.OnClickListener(){
+    }
+    private void addOnClickView(LinearLayout contact, String name){
+        //For viewing contact
+        final Intent toViewContact = new Intent(this, ViewContact.class);
+        toViewContact.putExtra("name",name);
+        contact.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
-                startActivity(f);
+                startActivity(toViewContact);
             }
         });
     }

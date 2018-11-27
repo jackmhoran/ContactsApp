@@ -5,12 +5,13 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 public class EditMe extends AppCompatActivity {
-    ImageView no;
-    ImageView yes;
+    ImageView deleteChangesImage;
+    ImageView saveChangesImage;
 
     ImageView image;
     EditText name;
@@ -20,13 +21,15 @@ public class EditMe extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+        getActionBar().hide();
         setContentView(R.layout.activity_edit_me);
         convert();
         instantiate();
     }
     private void convert(){
-        no = (ImageView) findViewById(R.id.no);
-        yes = (ImageView) findViewById(R.id.yes);
+        deleteChangesImage = (ImageView) findViewById(R.id.deleteChanges);
+        saveChangesImage = (ImageView) findViewById(R.id.saveChanges);
 
         image = (ImageView) findViewById(R.id.contactImage);
 
@@ -43,7 +46,10 @@ public class EditMe extends AppCompatActivity {
         email.setText(preferences.getString("myEmail",""));
         bio.setText(preferences.getString("myBio",""));
     }
-    public void yes(View v){
+    public void onSaveChanges(View v){
+        saveChanges();
+    }
+    private void saveChanges(){
         String cName = name.getText().toString().equals("") ? "You" : name.getText().toString();
         long cNumber = Long.parseLong(number.getText().toString());
         String cEmail = email.getText().toString();
@@ -59,8 +65,7 @@ public class EditMe extends AppCompatActivity {
         edit.apply();
         leave();
     }
-
-    public void no(View v){
+    public void onDeleteChanges(View v){
         leave();
     }
 

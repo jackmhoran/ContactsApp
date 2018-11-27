@@ -3,6 +3,9 @@ package com.regavi.jackh.contacts;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,11 +13,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Map;
 
 public class AddContact extends AppCompatActivity {
-    ImageView no;
-    ImageView yes;
+    ImageView deleteChangesImage;
+    ImageView saveChangesImage;
 
     ImageView image;
 
@@ -22,6 +27,8 @@ public class AddContact extends AppCompatActivity {
     EditText number;
     EditText email;
     EditText bio;
+
+    Drawable drawable;
 
 
     @Override
@@ -32,8 +39,8 @@ public class AddContact extends AppCompatActivity {
 
     }
     private void convert(){
-        no = (ImageView) findViewById(R.id.no);
-        yes = (ImageView) findViewById(R.id.yes);
+        deleteChangesImage = (ImageView) findViewById(R.id.deleteChanges);
+        saveChangesImage = (ImageView) findViewById(R.id.saveChanges);
 
         image = (ImageView) findViewById(R.id.contactImage);
 
@@ -42,45 +49,70 @@ public class AddContact extends AppCompatActivity {
         email = (EditText) findViewById(R.id.contactEmail);
         bio = (EditText) findViewById(R.id.contactBio);
     }
-    public void yes(View v){
+    public void onSaveChanges(View v){
         String cName = name.getText().toString();
-        if(isEmpty(cName)){}
+        SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+        if(isEmpty(cName)){preventEmpty();}
+        else if(hasDuplicate(preferences.getAll(),cName)){preventDuplicate();}
         else {
-            long cNumber = Long.parseLong(number.getText().toString());
-            String cEmail = email.getText().toString();
-            String cBio = bio.getText().toString();
-
-            SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
-            SharedPreferences.Editor edit = preferences.edit();
-
-            if (hasDuplicate(preferences.getAll(), cName)) {
-                duplicate();
-            } else {
-                edit.putString("name" + cName, cName);
-                edit.putLong("number" + cName, cNumber);
-                edit.putString("email" + cName, cEmail);
-                edit.putString("bio" + cName, cBio);
-                edit.apply();
-            }
-            leave();
+            saveChanges(cName);
         }
     }
-    private boolean isEmpty(String s){
-        if(s.equals("")){
-            Context c = getApplicationContext();
-            Toast toast = Toast.makeText(c, "Can't make a contact without a name!", Toast.LENGTH_SHORT);
-            toast.show();
+    private void saveChanges(String cName){
+        long cNumber = Long.parseLong(number.getText().toString());
+        String cEmail = email.getText().toString();
+        String cBio = bio.getText().toString();
+//TODO MAKE onsavechanges and savechanges and duplicate/empty stuff in modifyContact
+        SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+
+        edit.putString("name" + cName, cName);
+        edit.putLong("number" + cName, cNumber);
+        edit.putString("email" + cName, cEmail);
+        edit.putString("bio" + cName, cBio);
+        edit.apply();
+
+        leave();
+    }
+    public void pickImage(View v){
+        Intent pick = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pick,0);
+    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent){
+        super.onActivityResult(requestCode,resultCode,imageReturnedIntent);
+        switch(requestCode){
+            case 0:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    try {
+                        InputStream inputStream = getContentResolver().openInputStream(selectedImage);
+                        drawable = Drawable.createFromStream(inputStream, selectedImage.toString());
+                        image.setImageDrawable(drawable);
+                    } catch (FileNotFoundException e) {
+                        drawable = getResources().getDrawable(R.drawable.anon);
+                    }
+                }
+        }
+    }
+    private boolean isEmpty(String name){
+        if(name.equals("")){
             return true;
         }
         else
             return false;
     }
-    public void no(View v){
+    private void preventEmpty(){
+        Context context = getApplicationContext();
+        Toast toast = Toast.makeText(context, "Can't make a contact without a name!", Toast.LENGTH_SHORT);
+        toast.show();
+    }
+    public void onDeleteChanges(View v){
         leave();
     }
     private void leave(){
-        Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
+        Intent toMainActivity = new Intent(this, MainActivity.class);
+        startActivity(toMainActivity);
         finish();
     }
     private boolean hasDuplicate(Map<String, ?> map, String name){
@@ -94,9 +126,9 @@ public class AddContact extends AppCompatActivity {
         }
         return false;
     }
-    private void duplicate(){
-        Context c = getApplicationContext();
-        Toast toast = Toast.makeText(c, "This contact already exists!", Toast.LENGTH_SHORT);
+    private void preventDuplicate(){
+        Context context = getApplicationContext();
+        Toast toast = Toast.makeText(context, "This contact already exists!", Toast.LENGTH_SHORT);
         toast.show();
     }
 }

@@ -41,4 +41,5 @@ public class ViewContact extends AppCompatActivity {
         email.setText(preferences.getString("email"+s,""));
         bio.setText(preferences.getString("bio"+s,""));
     }
+
 }

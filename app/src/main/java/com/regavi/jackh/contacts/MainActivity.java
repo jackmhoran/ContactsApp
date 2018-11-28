@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     private void onClickMe(){
         //For viewing me
         final Intent toViewMe = new Intent(this, ViewMe.class);

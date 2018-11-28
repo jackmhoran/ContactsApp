@@ -2,8 +2,11 @@ package com.regavi.jackh.contacts;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
         loadContacts(preferences.getAll());
         userName.setText(preferences.getString("myName","You"));
+        setMyImage(preferences.getString("myImage",""));
+
+
     }
     private void onClickMe(){
         //For viewing me
@@ -74,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private void addContact(String name){
         LinearLayout contactView = new LinearLayout(this);
         contactView.setOrientation(LinearLayout.HORIZONTAL);
@@ -105,7 +112,43 @@ public class MainActivity extends AppCompatActivity {
         }
         return String.valueOf(chars);
     }
+    private ImageView convertStringToImageView(String encodedString){
+            ImageView image = new ImageView(this);
+            byte[] imageAsBytes = Base64.decode(encodedString.getBytes(), Base64.DEFAULT);
+            image.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+
+            final float scale = getResources().getDisplayMetrics().density;
+            int independentSize = (int) (30 * scale);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(independentSize, independentSize);
+            image.setLayoutParams(layoutParams);
+            return image;
+
+    }
+    private void setMyImage(String encodedString){
+        if(encodedString.equals("")){
+            userImage = getDefaultImage();
+        }
+        else {
+            byte[] imageAsBytes = Base64.decode(encodedString.getBytes(), Base64.DEFAULT);
+            Bitmap imageBitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
+            userImage.setImageBitmap(imageBitmap);
+        }
+    }
     private ImageView setImage(String name){
+        SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
+        String encodedString = preferences.getString("image" + name, "");
+        if(encodedString.equals("")){ return getDefaultImage(name); }
+        else { return convertStringToImageView(encodedString); }
+    }
+    private ImageView getDefaultImage(){
+        ImageView  image = new ImageView(this);
+        image.setImageResource(R.drawable.anon);
+        int sizeTemp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, getResources().getDisplayMetrics());
+        image.setLayoutParams(new ViewGroup.LayoutParams(sizeTemp, ViewGroup.LayoutParams.MATCH_PARENT));
+        return image;
+    }
+
+    private ImageView getDefaultImage(String name){
         ImageView  image = new ImageView(this);
         image.setImageResource(R.drawable.anon);
         int sizeTemp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30, getResources().getDisplayMetrics());

@@ -3,17 +3,29 @@ package com.regavi.jackh.contacts;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -27,6 +39,8 @@ public class AddContact extends AppCompatActivity {
     EditText number;
     EditText email;
     EditText bio;
+
+    String encodedImage = "";
 
     Drawable drawable;
 
@@ -63,7 +77,6 @@ public class AddContact extends AppCompatActivity {
         long cNumber = Long.parseLong(number.getText().toString());
         String cEmail = email.getText().toString();
         String cBio = bio.getText().toString();
-//TODO MAKE onsavechanges and savechanges and duplicate/empty stuff in modifyContact
         SharedPreferences preferences = getSharedPreferences("contacts", MODE_PRIVATE);
         SharedPreferences.Editor edit = preferences.edit();
 
@@ -71,6 +84,9 @@ public class AddContact extends AppCompatActivity {
         edit.putLong("number" + cName, cNumber);
         edit.putString("email" + cName, cEmail);
         edit.putString("bio" + cName, cBio);
+        if(!encodedImage.equals(""))
+            edit.putString("image" + cName, encodedImage);
+
         edit.apply();
 
         leave();
@@ -83,17 +99,54 @@ public class AddContact extends AppCompatActivity {
         super.onActivityResult(requestCode,resultCode,imageReturnedIntent);
         switch(requestCode){
             case 0:
-                if(resultCode == RESULT_OK){
+                if(requestCode == 0 && resultCode == RESULT_OK && imageReturnedIntent != null){
                     Uri selectedImage = imageReturnedIntent.getData();
+                    Bitmap bitmap;
                     try {
-                        InputStream inputStream = getContentResolver().openInputStream(selectedImage);
-                        drawable = Drawable.createFromStream(inputStream, selectedImage.toString());
-                        image.setImageDrawable(drawable);
-                    } catch (FileNotFoundException e) {
-                        drawable = getResources().getDrawable(R.drawable.anon);
+                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                        handleBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+
                 }
         }
+    }
+    private void handleBitmap(Bitmap bitmap){
+        Bitmap newBitmap = makeCircularBitmap(bitmap);
+        storeCroppedBitmap(newBitmap);
+        setImageView(newBitmap);
+    }
+    private void setImageView(Bitmap bitmap){
+        image.setImageBitmap(bitmap);
+        final float scale = getResources().getDisplayMetrics().density;
+        int independentSize  = (int) (150 * scale);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(independentSize, independentSize);
+        image.setLayoutParams(layoutParams);
+
+    }
+    private void storeCroppedBitmap(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] b = baos.toByteArray();
+        String encoded = Base64.encodeToString(b, Base64.DEFAULT);
+        encodedImage = encoded;
+    }
+    public Bitmap makeCircularBitmap(Bitmap bitmap) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2, bitmap.getWidth() / 2, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
     private boolean isEmpty(String name){
         if(name.equals("")){
